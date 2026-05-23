@@ -1,0 +1,119 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* react-phone-number-input dark theme */
+.phone-input-wrapper {
+  --PhoneInput-color--focus: #3b82f6;
+  --PhoneInputInternationalIconPhone-opacity: 0.8;
+  --PhoneInputInternationalIconGlobe-opacity: 0.65;
+  --PhoneInputCountrySelect-marginRight: 0.35em;
+  --PhoneInputCountrySelectArrow-color: #71717a;
+  --PhoneInputCountrySelectArrow-opacity: 1;
+  --PhoneInputCountrySelectArrow-width: 0.3em;
+  --PhoneInputCountrySelectArrow-borderWidth: 1.5px;
+  --PhoneInputCountryFlag-borderColor: rgba(255,255,255,0.15);
+  --PhoneInputCountryFlag-borderColor--focus: #3b82f6;
+
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: #09090b;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 0.75rem;
+  padding: 0 0.75rem 0 0.5rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  height: 2.875rem;
+}
+
+.phone-input-wrapper:focus-within {
+  border-color: rgba(59,130,246,0.6);
+  box-shadow: 0 0 0 1px rgba(59,130,246,0.3);
+  outline: none;
+}
+
+.phone-input-error {
+  border-color: rgba(239,68,68,0.6) !important;
+}
+
+.phone-input-error:focus-within {
+  box-shadow: 0 0 0 1px rgba(239,68,68,0.2) !important;
+}
+
+.phone-input-wrapper .PhoneInputCountry {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding-right: 0.5rem;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  margin-right: 0.5rem;
+}
+
+.phone-input-wrapper .PhoneInputCountrySelect {
+  background: #09090b;
+  border: none;
+  color: #a1a1aa;
+  font-size: 0.75rem;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.6rem;
+  padding: 0;
+  color-scheme: dark;
+}
+
+.phone-input-wrapper .PhoneInputCountrySelect option {
+  background: #18181b;
+  color: #e4e4e7;
+}
+
+/* Force the native select popup to use dark background */
+.phone-input-wrapper .PhoneInputCountrySelect:focus {
+  background: #09090b;
+  color: #e4e4e7;
+}
+
+.phone-input-wrapper .PhoneInputInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 0.875rem;
+  outline: none;
+  line-height: 1;
+}
+
+.phone-input-wrapper .PhoneInputInput::placeholder {
+  color: #52525b;
+}
+
+.phone-input-wrapper .PhoneInputCountryIcon {
+  width: 1.2rem;
+  height: 0.85rem;
+  border-radius: 2px;
+  overflow: hidden;
+}
