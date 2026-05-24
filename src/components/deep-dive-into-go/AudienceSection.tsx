@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, type Variants } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import { useInView } from 'framer-motion';
 import { GraduationCap, Code2, Briefcase, Repeat2, Rocket, Network, Trophy } from 'lucide-react';

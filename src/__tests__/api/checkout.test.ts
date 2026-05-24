@@ -179,7 +179,7 @@ describe('POST /api/checkout', () => {
   // ── Validation failures ────────────────────────────────────────────────────
 
   it('400 — missing firstName', async () => {
-    const { firstName: _, ...body } = VALID_BODY;
+    const { firstName: _fn, ...body } = VALID_BODY; void _fn;
     const res = await POST(makeRequest(body));
     expect(res.status).toBe(400);
     const json = await res.json();
@@ -187,7 +187,7 @@ describe('POST /api/checkout', () => {
   });
 
   it('400 — missing lastName', async () => {
-    const { lastName: _, ...body } = VALID_BODY;
+    const { lastName: _ln, ...body } = VALID_BODY; void _ln;
     const res = await POST(makeRequest(body));
     expect(res.status).toBe(400);
   });
@@ -217,7 +217,7 @@ describe('POST /api/checkout', () => {
   });
 
   it('400 — missing productSlug', async () => {
-    const { productSlug: _, ...body } = VALID_BODY;
+    const { productSlug: _ps, ...body } = VALID_BODY; void _ps;
     const res = await POST(makeRequest(body));
     expect(res.status).toBe(400);
   });

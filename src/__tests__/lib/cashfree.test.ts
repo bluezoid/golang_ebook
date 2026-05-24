@@ -156,8 +156,6 @@ describe('fetchCashfreeOrder', () => {
 });
 
 describe('verifyCashfreeWebhook', () => {
-  const VALID_SECRET = 'test-secret-key';
-
   it('returns valid=false for missing signature', () => {
     const result = verifyCashfreeWebhook('{}', {
       'x-webhook-signature': null,

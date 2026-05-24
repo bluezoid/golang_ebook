@@ -21,7 +21,7 @@ import Order from '@/models/Order';
 import Payment from '@/models/Payment';
 import WebhookLog from '@/models/WebhookLog';
 import { verifyCashfreeWebhook, reconcileAmounts } from '@/lib/cashfree';
-import { getFullPdfSignedUrl, getFullPdfR2Key } from '@/lib/r2';
+import { getFullPdfSignedUrl } from '@/lib/r2';
 import { generateDownloadToken } from '@/lib/security';
 import { auditLog } from '@/lib/audit';
 import { sendEbookDeliveryEmail } from '@/lib/brevo';

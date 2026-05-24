@@ -7,7 +7,7 @@ import Image from 'next/image';
 import bookCover from '../../../public/book-cover.jpg';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
+import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { checkoutSchema, type CheckoutFormValues } from '@/lib/validators';
 import type { ProductData } from './DeepDiveIntoGoPage';

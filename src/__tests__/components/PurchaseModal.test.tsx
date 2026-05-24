@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, within, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { server } from '../msw/server';
@@ -140,14 +140,15 @@ describe('PurchaseModal — form validation', () => {
 
   it('shows disposable email error', async () => {
     setup();
-    await userEvent.type(screen.getByLabelText(/first name/i), 'Arjun');
-    await userEvent.type(screen.getByLabelText(/last name/i), 'Sharma');
-    await userEvent.type(screen.getByLabelText(/email/i), 'test@mailinator.com');
-    await userEvent.type(screen.getByTestId('phone-input'), '+919876543210');
+    fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'Arjun' } });
+    fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'Sharma' } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@mailinator.com' } });
+    fireEvent.change(screen.getByTestId('phone-input'), { target: { value: '+919876543210' } });
+    fireEvent.blur(screen.getByTestId('phone-input'));
     await userEvent.click(screen.getByRole('button', { name: /buy now/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/temporary email/i)).toBeInTheDocument();
+      expect(screen.getByText(/Temporary email/i)).toBeInTheDocument();
     }, { timeout: 3000 });
   });
 });
