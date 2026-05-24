@@ -143,6 +143,7 @@ describe('PurchaseModal — form validation', () => {
     await userEvent.type(screen.getByLabelText(/first name/i), 'Arjun');
     await userEvent.type(screen.getByLabelText(/last name/i), 'Sharma');
     await userEvent.type(screen.getByLabelText(/email/i), 'test@mailinator.com');
+    fireEvent.change(screen.getByTestId('phone-input'), { target: { value: '+919876543210' } });
     await userEvent.click(screen.getByRole('button', { name: /buy now/i }));
 
     await waitFor(() => {

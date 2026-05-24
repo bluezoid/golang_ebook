@@ -16,7 +16,7 @@ export class PurchaseModalPO {
     this.firstNameInput = page.getByLabel(/first name/i);
     this.lastNameInput = page.getByLabel(/last name/i);
     this.emailInput = page.getByLabel(/email address/i);
-    this.submitButton = page.getByRole('button', { name: /proceed to pay/i });
+    this.submitButton = page.getByRole('button', { name: /buy now/i });
     this.closeButton = page.getByRole('button', { name: /close/i });
     this.errorBox = page.locator('text=Failed to').first();
   }

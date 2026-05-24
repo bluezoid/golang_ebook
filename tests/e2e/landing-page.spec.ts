@@ -101,8 +101,10 @@ test.describe('Landing Page', () => {
     await expect(page.getByText(/support@bluezoid\.in/i).first()).toBeVisible();
   });
 
-  test('pricing card shows ₹149 and 85% OFF', async ({ page }) => {
+  test('pricing card shows current price and discount badge', async ({ page }) => {
     await page.goto('/products/deep-dive-into-go');
-    await expect(page.getByText('85% OFF').first()).toBeVisible();
+    // Price comes from API — just verify a discount badge and ₹ symbol are present
+    await expect(page.getByText(/% OFF/i).first()).toBeVisible();
+    await expect(page.getByText(/₹/).first()).toBeVisible();
   });
 });

@@ -123,7 +123,7 @@ test.describe('Purchase Flow', () => {
       await phoneInput.first().fill('+919876543210');
     }
 
-    await page.getByRole('button', { name: /proceed to pay/i }).click();
+    await page.getByRole('button', { name: /buy now/i }).click();
 
     await page.waitForTimeout(500);
 
@@ -148,7 +148,7 @@ test.describe('Purchase Flow', () => {
     await page.getByLabel(/first name/i).fill('Arjun');
     await page.getByLabel(/last name/i).fill('Sharma');
     await page.getByLabel(/email address/i).fill('arjun@gmail.com');
-    await page.getByRole('button', { name: /proceed to pay/i }).click();
+    await page.getByRole('button', { name: /buy now/i }).click();
 
     await expect(page.getByText(/failed to create order/i)).toBeVisible();
   });

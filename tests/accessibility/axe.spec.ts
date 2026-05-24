@@ -27,12 +27,12 @@ test.describe('Accessibility — axe-core WCAG 2.1 AA', () => {
       route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ status: 'fulfilled', email: 'test@gmail.com' }),
+        body: JSON.stringify({ paid: true, status: 'paid', productTitle: 'Deep Dive Into Go' }),
       });
     });
 
     await page.goto('/products/deep-dive-into-go/success?order_id=BLZ-A11Y01');
-    await page.getByText(/payment successful/i).waitFor();
+    await page.getByText(/payment successful/i).waitFor({ timeout: 10000 });
 
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa'])

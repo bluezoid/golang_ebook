@@ -74,11 +74,11 @@ describe('sendEbookDeliveryEmail', () => {
     expect(arg.htmlContent).toContain(BASE_PARAMS.orderId);
   });
 
-  it('htmlContent includes the 15-minute expiry warning', async () => {
+  it('htmlContent includes the 10-minute expiry warning', async () => {
     await sendEbookDeliveryEmail(BASE_PARAMS);
 
     const arg = mockSendTransacEmail.mock.calls[0][0];
-    expect(arg.htmlContent).toContain('15 minutes');
+    expect(arg.htmlContent).toContain('10 minutes');
   });
 
   it('htmlContent includes support email', async () => {
