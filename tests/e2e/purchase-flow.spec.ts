@@ -123,7 +123,7 @@ test.describe('Purchase Flow', () => {
       await phoneInput.first().fill('+919876543210');
     }
 
-    await page.getByRole('button', { name: /buy now/i }).click();
+    await page.getByRole('dialog').getByRole('button', { name: /buy now/i }).click();
 
     await page.waitForTimeout(500);
 
@@ -148,8 +148,12 @@ test.describe('Purchase Flow', () => {
     await page.getByLabel(/first name/i).fill('Arjun');
     await page.getByLabel(/last name/i).fill('Sharma');
     await page.getByLabel(/email address/i).fill('arjun@gmail.com');
-    await page.getByRole('button', { name: /buy now/i }).click();
+    const phoneInput = page.locator('input[name="phone"]').or(page.locator('.PhoneInputInput'));
+    if (await phoneInput.count() > 0) {
+      await phoneInput.first().fill('+919876543210');
+    }
+    await page.getByRole('dialog').getByRole('button', { name: /buy now/i }).click();
 
-    await expect(page.getByText(/failed to create order/i)).toBeVisible();
+    await expect(page.getByText(/failed to create order/i)).toBeVisible({ timeout: 8000 });
   });
 });

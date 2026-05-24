@@ -12,7 +12,7 @@ export class LandingPage {
     this.heroHeading = page.getByRole('heading', { level: 1 });
     this.buyNowButton = page.getByRole('button', { name: /buy now/i }).first();
     this.previewBookButton = page.getByRole('button', { name: /preview book/i }).first();
-    this.coverImage = page.getByAltText('Deep Dive Into Go — book cover');
+    this.coverImage = page.getByAltText('Deep Dive Into Go — book cover').first();
   }
 
   async goto() {

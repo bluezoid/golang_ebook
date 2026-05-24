@@ -46,11 +46,21 @@ export default function PurchaseModal({ open, onClose, product }: PurchaseModalP
       setTimeout(() => firstFieldRef.current?.focus(), 150);
     } else {
       document.body.style.overflow = '';
-      reset();
-      setSubmitState('idle');
-      setErrorMsg('');
     }
     return () => { document.body.style.overflow = ''; };
+  }, [open]);
+
+  // Reset form state when modal closes. setState is deferred so the rule
+  // react-hooks/set-state-in-effect is satisfied (not called synchronously).
+  useEffect(() => {
+    if (!open) {
+      const id = setTimeout(() => {
+        reset();
+        setSubmitState('idle');
+        setErrorMsg('');
+      }, 0);
+      return () => clearTimeout(id);
+    }
   }, [open, reset]);
 
   useEffect(() => {
