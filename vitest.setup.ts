@@ -59,7 +59,7 @@ vi.mock('framer-motion', async () => {
   const motion = new Proxy({} as Record<string, unknown>, {
     get: (_target, tag: string) =>
       React.forwardRef(({ children, ...props }: React.HTMLAttributes<HTMLElement> & { children?: React.ReactNode }, ref: React.Ref<HTMLElement>) =>
-        React.createElement(tag as keyof JSX.IntrinsicElements, { ...props, ref }, children)
+        React.createElement(tag as keyof React.JSX.IntrinsicElements, { ...props, ref }, children)
       ),
   });
   return {

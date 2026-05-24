@@ -1,8 +1,8 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page, type Route } from '@playwright/test';
 
 test.describe('Success Page', () => {
-  function mockVerifyPayment(page: Parameters<typeof test>[1]['page'], response: Record<string, unknown>) {
-    return page.route('/api/verify-payment', (route) => {
+  function mockVerifyPayment(page: Page, response: Record<string, unknown>) {
+    return page.route('/api/verify-payment', (route: Route) => {
       route.fulfill({
         status: 200,
         contentType: 'application/json',
