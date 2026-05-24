@@ -49,10 +49,10 @@ This ebook covers:
 - Part 7: Production Systems — microservices, event sourcing, CQRS, interview prep
 
 All 315 programs are runnable with Go 1.22+. Includes 300+ interview Q&A and a complete Go spec appendix.`,
-  currentPrice: 149,
+  currentPrice: 179,
   originalPrice: 999,
   currency: 'INR',
-  discountPercent: 85,
+  discountPercent: 82,
   discountLabel: 'Launch Price',
   isActive: true,
   isFeatured: true,

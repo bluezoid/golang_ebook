@@ -59,15 +59,35 @@ export async function checkRateLimit(
       return checkMemoryFallback(key, config);
     }
 
-    const record = await RateLimitTracking.findOneAndUpdate(
+    // Query by key only to avoid upsert race on the unique index.
+    // If the window has expired, reset the counter atomically.
+    let record = await RateLimitTracking.findOneAndUpdate(
       { key, windowStart: { $gte: windowStart } },
       {
         $inc: { requestCount: 1 },
         $set: { lastSeen: now, endpoint: config.endpoint, ipAddress: ip },
-        $setOnInsert: { windowStart: now, isBlocked: false, blockedUntil: null },
       },
-      { upsert: true, new: true }
+      { returnDocument: 'after' }
     );
+
+    if (!record) {
+      // No document in the current window — upsert by key only (safe, no duplicate)
+      record = await RateLimitTracking.findOneAndUpdate(
+        { key },
+        {
+          $set: {
+            windowStart: now,
+            requestCount: 1,
+            isBlocked: false,
+            blockedUntil: null,
+            lastSeen: now,
+            endpoint: config.endpoint,
+            ipAddress: ip,
+          },
+        },
+        { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
+      );
+    }
 
     if (!record) {
       return { limited: false, remaining: config.maxRequests - 1, resetAt: new Date(now.getTime() + config.windowMs) };

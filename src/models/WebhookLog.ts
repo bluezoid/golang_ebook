@@ -24,7 +24,7 @@ const WebhookLogSchema = new Schema<IWebhookLog>(
     cfPaymentId: { type: String, default: '' },
     signatureValid: { type: Boolean, required: true },
     isReplay: { type: Boolean, default: false },
-    idempotencyKey: { type: String, required: true, index: true },
+    idempotencyKey: { type: String, required: true },
     rawHeaders: { type: Schema.Types.Mixed, default: {} },
     rawBody: { type: Schema.Types.Mixed, default: {} },
     processingResult: {

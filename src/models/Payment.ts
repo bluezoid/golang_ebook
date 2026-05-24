@@ -39,7 +39,7 @@ const PaymentSchema = new Schema<IPayment>(
     webhookSignatureVerified: { type: Boolean, default: false },
     webhookTimestamp: { type: Date, default: null },
     // Idempotency key: cfOrderId + cfPaymentId combo
-    webhookIdempotencyKey: { type: String, required: true, unique: true },
+    webhookIdempotencyKey: { type: String, required: true },
     isReplay: { type: Boolean, default: false },
     paidAmount: { type: Number, required: true },
     paidCurrency: { type: String, required: true },

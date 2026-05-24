@@ -89,7 +89,9 @@ export function verifyCashfreeWebhookSignature(
 export function isWebhookTimestampFresh(timestampSeconds: string): boolean {
   const ts = parseInt(timestampSeconds, 10);
   if (isNaN(ts)) return false;
-  const ageMs = Date.now() - ts * 1000;
+  // Cashfree sandbox sends milliseconds (13 digits), production sends seconds (10 digits)
+  const tsMs = ts > 1e12 ? ts : ts * 1000;
+  const ageMs = Date.now() - tsMs;
   return ageMs >= 0 && ageMs <= WEBHOOK_MAX_AGE_MS;
 }
 

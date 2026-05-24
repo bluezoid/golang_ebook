@@ -151,8 +151,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   // ── 6. Find the order ─────────────────────────────────────────────────────────
+  // Cashfree sandbox sends order.order_id as our internal BLZ-... ID,
+  // but production sends the numeric cf_order_id. Try both.
   const cfOrderId = verification.cfOrderId!;
-  const order = await Order.findOne({ cashfreeOrderId: cfOrderId });
+  const order =
+    await Order.findOne({ cashfreeOrderId: cfOrderId }) ??
+    await Order.findOne({ internalOrderId: cfOrderId });
 
   if (!order) {
     await WebhookLog.create({

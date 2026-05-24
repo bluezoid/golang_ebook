@@ -14,29 +14,58 @@ function SuccessContent() {
   const orderId = params.get('order_id');
   const [state, setState] = useState<VerifyState>('verifying');
   const [productTitle, setProductTitle] = useState('');
-  const verified = useRef(false);
+  const stopped = useRef(false);
 
   useEffect(() => {
-    if (!orderId || verified.current) return;
-    verified.current = true;
+    if (!orderId) return;
 
-    fetch('/api/verify-payment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ orderId }),
-    })
-      .then((r) => r.json())
-      .then((data) => {
+    const MAX_ATTEMPTS = 20;   // 20 × 3s = 60s max
+    const INTERVAL_MS  = 3000;
+    let attempt = 0;
+
+    async function poll() {
+      if (stopped.current) return;
+      attempt++;
+
+      try {
+        const r = await fetch('/api/verify-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId }),
+        });
+        const data = await r.json();
+
+        if (stopped.current) return;
+
         if (data.paid) {
+          stopped.current = true;
           setProductTitle(data.productTitle ?? '');
           setState('paid');
-        } else if (data.status === 'failed' || data.status === 'cancelled') {
-          router.replace(`/products/deep-dive-into-go?payment=failed&order_id=${orderId}`);
-        } else {
-          setState('pending');
+          return;
         }
-      })
-      .catch(() => setState('error'));
+
+        if (data.status === 'failed' || data.status === 'cancelled') {
+          stopped.current = true;
+          router.replace(`/products/deep-dive-into-go?payment=failed&order_id=${orderId}`);
+          return;
+        }
+
+        // Still pending — keep polling until max attempts
+        if (attempt < MAX_ATTEMPTS) {
+          setState('pending');
+          setTimeout(poll, INTERVAL_MS);
+        } else {
+          stopped.current = true;
+          setState('pending'); // leave on pending so user sees support info
+        }
+      } catch {
+        if (!stopped.current) setState('error');
+      }
+    }
+
+    poll();
+
+    return () => { stopped.current = true; };
   }, [orderId, router]);
 
   return (
