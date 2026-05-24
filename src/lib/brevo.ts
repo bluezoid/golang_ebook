@@ -49,7 +49,7 @@ export async function sendEbookDeliveryEmail({
                 Your eBook is ready, ${toName.split(' ')[0]}! 🚀
               </h1>
               <p style="margin:0 0 32px;font-size:16px;color:#a1a1aa;line-height:1.6;">
-                Thank you for purchasing <strong style="color:#e4e4e7;">Deep Dive Into Go</strong>. Your download link is ready — it expires in <strong style="color:#f59e0b;">15 minutes</strong> for security.
+                Thank you for purchasing <strong style="color:#e4e4e7;">Deep Dive Into Go</strong>. Your download link is ready — it expires in <strong style="color:#f59e0b;">10 minutes</strong> for security.
               </p>
 
               <div style="background:#09090b;border-radius:12px;border:1px solid rgba(255,255,255,0.06);padding:20px;margin-bottom:32px;">
@@ -62,7 +62,7 @@ export async function sendEbookDeliveryEmail({
                 <a href="${downloadUrl}" style="display:inline-block;background:#2563eb;color:#ffffff;font-weight:700;font-size:15px;text-decoration:none;padding:14px 40px;border-radius:12px;box-shadow:0 4px 24px rgba(37,99,235,0.3);">
                   Download Your eBook →
                 </a>
-                <p style="margin:12px 0 0;font-size:12px;color:#52525b;">Link expires in 15 minutes · One-time use</p>
+                <p style="margin:12px 0 0;font-size:12px;color:#52525b;">Link expires in 10 minutes · One-time use</p>
               </div>
 
               <div style="background:#09090b;border-radius:10px;border:1px solid rgba(255,255,255,0.06);padding:16px 20px;margin-bottom:24px;">
