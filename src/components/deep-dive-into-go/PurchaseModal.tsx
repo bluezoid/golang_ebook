@@ -10,15 +10,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { checkoutSchema, type CheckoutFormValues } from '@/lib/validators';
+import type { ProductData } from './DeepDiveIntoGoPage';
+
+const PRODUCT_SLUG = 'deep-dive-into-go';
 
 interface PurchaseModalProps {
   open: boolean;
   onClose: () => void;
+  product: ProductData;
 }
 
 type SubmitState = 'idle' | 'submitting' | 'redirecting' | 'error';
 
-export default function PurchaseModal({ open, onClose }: PurchaseModalProps) {
+export default function PurchaseModal({ open, onClose, product }: PurchaseModalProps) {
   const firstFieldRef = useRef<HTMLInputElement | null>(null);
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
   const [errorMsg, setErrorMsg] = useState('');
@@ -63,7 +67,7 @@ export default function PurchaseModal({ open, onClose }: PurchaseModalProps) {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, productSlug: PRODUCT_SLUG }),
       });
 
       const json = await res.json();
@@ -141,7 +145,7 @@ export default function PurchaseModal({ open, onClose }: PurchaseModalProps) {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex flex-col gap-1">
                     <h2 id="modal-title" className="text-lg font-bold text-white">Complete Purchase</h2>
-                    <p className="text-sm text-zinc-500">Deep Dive Into Go · One-time ₹149</p>
+                    <p className="text-sm text-zinc-500">{product.title} · One-time ₹{product.currentPrice}</p>
                   </div>
                   <button
                     onClick={onClose}
@@ -162,12 +166,12 @@ export default function PurchaseModal({ open, onClose }: PurchaseModalProps) {
                     />
                   </div>
                   <div className="flex flex-col gap-0.5 flex-1">
-                    <span className="text-sm font-semibold text-white">Deep Dive Into Go</span>
+                    <span className="text-sm font-semibold text-white">{product.title}</span>
                     <span className="text-xs text-zinc-500">102 chapters · 315 programs · Lifetime access</span>
                   </div>
                   <div className="flex flex-col items-end shrink-0">
-                    <span className="text-lg font-bold text-white">₹149</span>
-                    <span className="text-xs text-zinc-600 line-through">₹999</span>
+                    <span className="text-lg font-bold text-white">₹{product.currentPrice}</span>
+                    <span className="text-xs text-zinc-600 line-through">₹{product.originalPrice}</span>
                   </div>
                 </div>
 
@@ -286,7 +290,7 @@ export default function PurchaseModal({ open, onClose }: PurchaseModalProps) {
                     ) : (
                       <>
                         <CreditCard className="w-4 h-4" />
-                        Proceed to Pay ₹149
+                        {product.ctaPrimary} ₹{product.currentPrice}
                       </>
                     )}
                   </button>

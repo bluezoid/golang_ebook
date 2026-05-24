@@ -47,38 +47,47 @@ describe('SuccessPage', () => {
     expect(screen.getByText(/verifying your payment/i)).toBeInTheDocument();
   });
 
-  it('shows success card when status is fulfilled', async () => {
-    mockVerify({ status: 'fulfilled', email: 'customer@gmail.com' });
+  it('shows success card when paid=true', async () => {
+    mockVerify({ paid: true, status: 'paid', productTitle: 'Deep Dive Into Go', downloadEmailSent: true, paidAt: null });
     renderPage();
 
     await waitFor(() => {
       expect(screen.getByText(/payment successful/i)).toBeInTheDocument();
     });
-    expect(screen.getByText(/customer@gmail\.com/i)).toBeInTheDocument();
   });
 
-  it('shows already_fulfilled message', async () => {
-    mockVerify({ status: 'already_fulfilled' });
+  it('shows product title on success card', async () => {
+    mockVerify({ paid: true, status: 'paid', productTitle: 'Deep Dive Into Go', downloadEmailSent: true, paidAt: null });
     renderPage();
 
-    await waitFor(() => {
-      expect(screen.getByText(/already processed/i)).toBeInTheDocument();
-    });
+    await waitFor(() => screen.getByText(/payment successful/i));
+    expect(screen.getByText('Deep Dive Into Go')).toBeInTheDocument();
   });
 
-  it('redirects to cancelled page when status is failed', async () => {
-    mockVerify({ status: 'failed' });
+  it('redirects to product page when status is failed', async () => {
+    mockVerify({ paid: false, status: 'failed' });
     renderPage();
 
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith(
-        expect.stringContaining('/products/deep-dive-into-go/cancelled')
+        expect.stringContaining('/products/deep-dive-into-go')
+      );
+    });
+  });
+
+  it('redirects to product page when status is cancelled', async () => {
+    mockVerify({ paid: false, status: 'cancelled' });
+    renderPage();
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith(
+        expect.stringContaining('/products/deep-dive-into-go')
       );
     });
   });
 
   it('shows pending card when status is pending', async () => {
-    mockVerify({ status: 'pending' });
+    mockVerify({ paid: false, status: 'pending' });
     renderPage();
 
     await waitFor(() => {
@@ -111,7 +120,7 @@ describe('SuccessPage', () => {
     server.use(
       http.post(VERIFY_URL, async ({ request }) => {
         capturedBody = await request.json() as Record<string, unknown>;
-        return HttpResponse.json({ status: 'fulfilled', email: 'x@gmail.com' });
+        return HttpResponse.json({ paid: true, status: 'paid', productTitle: 'Test', downloadEmailSent: true, paidAt: null });
       })
     );
 
@@ -122,21 +131,19 @@ describe('SuccessPage', () => {
   });
 
   it('does not re-call the API after initial verification', async () => {
-    mockVerify({ status: 'fulfilled', email: 'x@gmail.com' });
+    mockVerify({ paid: true, status: 'paid', productTitle: 'Deep Dive Into Go', downloadEmailSent: true, paidAt: null });
 
     renderPage();
 
-    // Wait for the fulfilled state to render — confirms one call completed
     await waitFor(() => {
       expect(screen.getByText(/payment successful/i)).toBeInTheDocument();
     });
-    // The success state is stable — no infinite loop or repeated calls
     await new Promise((r) => setTimeout(r, 50));
     expect(screen.getByText(/payment successful/i)).toBeInTheDocument();
   });
 
   it('displays the orderId in support text', async () => {
-    mockVerify({ status: 'fulfilled', email: 'x@gmail.com' });
+    mockVerify({ paid: true, status: 'paid', productTitle: 'Deep Dive Into Go', downloadEmailSent: true, paidAt: null });
     renderPage();
 
     await waitFor(() => screen.getByText(/payment successful/i));

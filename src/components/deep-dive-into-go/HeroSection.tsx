@@ -4,6 +4,7 @@ import { motion, type Variants } from 'framer-motion';
 import { BookOpen, Download, Shield, Zap, Star, ArrowRight, Eye, Code2, Users } from 'lucide-react';
 import Image from 'next/image';
 import bookCover from '../../../public/book-cover.jpg';
+import type { ProductData } from './DeepDiveIntoGoPage';
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 24 },
@@ -26,9 +27,10 @@ const trustItems = [
 interface HeroSectionProps {
   onBuyClick: () => void;
   onPreviewClick: () => void;
+  product: ProductData;
 }
 
-export default function HeroSection({ onBuyClick, onPreviewClick }: HeroSectionProps) {
+export default function HeroSection({ onBuyClick, onPreviewClick, product }: HeroSectionProps) {
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-zinc-950">
       {/* Ambient background */}
@@ -124,7 +126,7 @@ export default function HeroSection({ onBuyClick, onPreviewClick }: HeroSectionP
                 className="group flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all duration-200 shadow-lg shadow-blue-600/25 hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Download className="w-4 h-4" />
-                Buy Now — ₹149
+                {product.ctaPrimary} — ₹{product.currentPrice}
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
               </button>
 
@@ -181,7 +183,7 @@ export default function HeroSection({ onBuyClick, onPreviewClick }: HeroSectionP
 
                 {/* Price badge */}
                 <div className="absolute -top-3 -right-3 bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-blue-600/30">
-                  ₹149
+                  ₹{product.currentPrice}
                 </div>
               </div>
             </motion.div>
@@ -194,9 +196,11 @@ export default function HeroSection({ onBuyClick, onPreviewClick }: HeroSectionP
               className="w-full max-w-sm rounded-2xl border border-white/8 bg-white/3 backdrop-blur-sm p-6 flex flex-col gap-5"
             >
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-white">₹149</span>
-                <span className="text-zinc-500 text-sm line-through">₹999</span>
-                <span className="ml-auto text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full">85% OFF</span>
+                <span className="text-3xl font-bold text-white">₹{product.currentPrice}</span>
+                <span className="text-zinc-500 text-sm line-through">₹{product.originalPrice}</span>
+                {product.discountPercent > 0 && (
+                  <span className="ml-auto text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full">{product.discountPercent}% OFF</span>
+                )}
               </div>
 
               <ul className="flex flex-col gap-2.5">
@@ -225,7 +229,7 @@ export default function HeroSection({ onBuyClick, onPreviewClick }: HeroSectionP
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all duration-200 shadow-lg shadow-blue-600/20 hover:shadow-blue-500/25"
               >
                 <Download className="w-4 h-4" />
-                Buy Now — ₹149
+                {product.ctaPrimary} — ₹{product.currentPrice}
               </button>
 
               <p className="text-center text-xs text-zinc-600">Secure checkout · One-time payment · No subscription</p>
@@ -246,7 +250,7 @@ export default function HeroSection({ onBuyClick, onPreviewClick }: HeroSectionP
           onClick={onBuyClick}
           className="flex-2 py-3 rounded-xl bg-blue-600 text-white text-sm font-semibold shadow-lg shadow-blue-600/20"
         >
-          Buy Now — ₹149
+          {product.ctaPrimary} — ₹{product.currentPrice}
         </button>
       </div>
     </section>

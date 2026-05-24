@@ -6,10 +6,21 @@ import HeroSection from '@/components/deep-dive-into-go/HeroSection';
 // Static image import is mocked globally in vitest.setup.ts
 vi.mock('../../../public/book-cover.jpg', () => ({ default: { src: '/book-cover.jpg', width: 700, height: 640 } }));
 
+const DEFAULT_PRODUCT = {
+  currentPrice: 149,
+  originalPrice: 999,
+  discountPercent: 85,
+  discountLabel: 'Launch Price',
+  ctaPrimary: 'Buy Now',
+  ctaSecondary: 'Preview Book',
+  title: 'Deep Dive Into Go',
+  subtitle: 'Building Production-Ready Systems',
+};
+
 const setup = (overrides = {}) => {
   const onBuyClick = vi.fn();
   const onPreviewClick = vi.fn();
-  render(<HeroSection onBuyClick={onBuyClick} onPreviewClick={onPreviewClick} {...overrides} />);
+  render(<HeroSection onBuyClick={onBuyClick} onPreviewClick={onPreviewClick} product={DEFAULT_PRODUCT} {...overrides} />);
   return { onBuyClick, onPreviewClick };
 };
 

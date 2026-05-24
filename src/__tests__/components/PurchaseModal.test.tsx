@@ -51,9 +51,20 @@ const VALID_FORM = {
   email: 'arjun@gmail.com',
 };
 
+const DEFAULT_PRODUCT = {
+  currentPrice: 149,
+  originalPrice: 999,
+  discountPercent: 85,
+  discountLabel: 'Launch Price',
+  ctaPrimary: 'Buy Now',
+  ctaSecondary: 'Preview Book',
+  title: 'Deep Dive Into Go',
+  subtitle: 'Building Production-Ready Systems',
+};
+
 function setup(open = true) {
   const onClose = vi.fn();
-  render(<PurchaseModal open={open} onClose={onClose} />);
+  render(<PurchaseModal open={open} onClose={onClose} product={DEFAULT_PRODUCT} />);
   return { onClose };
 }
 
@@ -108,7 +119,7 @@ describe('PurchaseModal — form validation', () => {
 
   it('shows error messages when submitting empty form', async () => {
     setup();
-    await userEvent.click(screen.getByRole('button', { name: /proceed to pay/i }));
+    await userEvent.click(screen.getByRole('button', { name: /buy now/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/first name must be at least/i)).toBeInTheDocument();
@@ -120,7 +131,7 @@ describe('PurchaseModal — form validation', () => {
     await userEvent.type(screen.getByLabelText(/first name/i), 'Arjun');
     await userEvent.type(screen.getByLabelText(/last name/i), 'Sharma');
     await userEvent.type(screen.getByLabelText(/email/i), 'notanemail');
-    await userEvent.click(screen.getByRole('button', { name: /proceed to pay/i }));
+    await userEvent.click(screen.getByRole('button', { name: /buy now/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/valid email/i)).toBeInTheDocument();
@@ -132,7 +143,7 @@ describe('PurchaseModal — form validation', () => {
     await userEvent.type(screen.getByLabelText(/first name/i), 'Arjun');
     await userEvent.type(screen.getByLabelText(/last name/i), 'Sharma');
     await userEvent.type(screen.getByLabelText(/email/i), 'test@mailinator.com');
-    await userEvent.click(screen.getByRole('button', { name: /proceed to pay/i }));
+    await userEvent.click(screen.getByRole('button', { name: /buy now/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/temporary email/i)).toBeInTheDocument();
@@ -161,7 +172,7 @@ describe('PurchaseModal — submission flow', () => {
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: VALID_FORM.email } });
     fireEvent.change(screen.getByTestId('phone-input'), { target: { value: '+919876543210' } });
 
-    fireEvent.click(screen.getByRole('button', { name: /proceed to pay/i }));
+    fireEvent.click(screen.getByRole('button', { name: /buy now/i }));
 
     await waitFor(() => expect(capturedBody).not.toBeNull());
     expect(capturedBody!.firstName).toBe(VALID_FORM.firstName);
@@ -181,7 +192,7 @@ describe('PurchaseModal — submission flow', () => {
     fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: VALID_FORM.lastName } });
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: VALID_FORM.email } });
     fireEvent.change(screen.getByTestId('phone-input'), { target: { value: '+919876543210' } });
-    fireEvent.click(screen.getByRole('button', { name: /proceed to pay/i }));
+    fireEvent.click(screen.getByRole('button', { name: /buy now/i }));
 
     await waitFor(() => {
       expect(screen.getByText('Failed to create order')).toBeInTheDocument();

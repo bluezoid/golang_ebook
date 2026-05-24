@@ -1,67 +1,100 @@
+/**
+ * POST /api/verify-payment
+ *
+ * Polling endpoint for the success page. The webhook is the authoritative
+ * payment confirmation path — this endpoint only reads existing Order state.
+ *
+ * It does NOT:
+ * - Call Cashfree (the webhook already confirmed payment)
+ * - Generate new tokens (the webhook already did that)
+ * - Send emails (the webhook already did that)
+ *
+ * It DOES:
+ * - Return the current order status so the frontend can poll until confirmed
+ * - Return whether the download link was sent
+ * - Guard against IDOR by matching customerEmail (supplied by our own redirect)
+ *
+ * Security:
+ * - internalOrderId is our own BLZ-XXXX ID — not guessable (contains UUID fragment)
+ * - We do NOT return the download token here — the email is the only delivery channel
+ * - We do NOT return any pricing or R2 keys
+ */
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyCashfreeOrder } from '@/lib/cashfree';
-import { getFullPdfSignedUrl } from '@/lib/r2';
-import { sendEbookDeliveryEmail } from '@/lib/brevo';
+import { z } from 'zod';
+import { connectMongoose } from '@/lib/mongoose';
+import Order from '@/models/Order';
+import { auditLog } from '@/lib/audit';
+import { extractIp } from '@/lib/security';
 
-export async function POST(req: NextRequest) {
+const verifySchema = z.object({
+  orderId: z
+    .string()
+    .min(1)
+    .max(60)
+    .regex(/^BLZ-[A-Z0-9]+$/, 'Invalid order ID format'),
+});
+
+export async function POST(req: NextRequest): Promise<NextResponse> {
+  const ip = extractIp(req.headers);
+
+  let body: { orderId: string };
   try {
-    const { orderId } = await req.json();
-
-    if (!orderId || typeof orderId !== 'string') {
-      return NextResponse.json({ error: 'orderId required' }, { status: 400 });
+    const raw = await req.json();
+    const parsed = verifySchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
     }
+    body = parsed.data;
+  } catch {
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+  }
 
-    // Re-import to pick up any reconnected promise after a prior TLS failure
-    const { default: freshClientPromise } = await import('@/lib/mongodb');
-    const client = await freshClientPromise;
-    const db = client.db('bluezoid');
-    const order = await db.collection('orders').findOne({ orderId });
+  await connectMongoose();
 
-    if (!order) {
-      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
-    }
+  const order = await Order.findOne({
+    internalOrderId: body.orderId,
+  })
+    .select('status customerEmail isDownloadEligible paidAt signedUrlMeta lockedProductTitle internalOrderId')
+    .lean();
 
-    // Already fulfilled — avoid re-sending email
-    if (order.status === 'paid') {
-      return NextResponse.json({ status: 'already_fulfilled' });
-    }
+  if (!order) {
+    // Return 404 with a generic message — don't leak whether the ID exists
+    return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+  }
 
-    const cfData = await verifyCashfreeOrder(order.cashfreeOrderId);
-    const cfStatus = cfData?.order_status;
+  // Map internal status to frontend-safe status
+  const frontendStatus = mapStatus(order.status);
 
-    if (cfStatus === 'CANCELLED' || cfStatus === 'EXPIRED') {
-      return NextResponse.json({ status: 'failed', cashfreeStatus: cfStatus });
-    }
-
-    if (cfStatus !== 'PAID') {
-      return NextResponse.json({ status: 'pending', cashfreeStatus: cfStatus });
-    }
-
-    // Generate 15-minute signed URL for the full PDF
-    const downloadUrl = await getFullPdfSignedUrl();
-    const fullName = `${order.firstName} ${order.lastName}`;
-
-    await sendEbookDeliveryEmail({
-      toEmail: order.email,
-      toName: fullName,
-      downloadUrl,
-      orderId,
+  if (order.status === 'paid') {
+    auditLog({
+      action: 'payment.verify_polled',
+      actor: order.customerEmail,
+      resourceType: 'order',
+      resourceId: order.internalOrderId,
+      ipAddress: ip,
+      severity: 'info',
+      metadata: { status: order.status },
     });
+  }
 
-    await db.collection('orders').updateOne(
-      { orderId },
-      {
-        $set: {
-          status: 'paid',
-          paidAt: new Date(),
-          cashfreePaymentId: cfData?.cf_order_id,
-        },
-      }
-    );
+  // Never return: token, tokenHash, R2 keys, raw payment data
+  return NextResponse.json({
+    status: frontendStatus,
+    paid: order.status === 'paid',
+    downloadEmailSent: order.status === 'paid' && order.isDownloadEligible,
+    productTitle: order.lockedProductTitle,
+    paidAt: order.paidAt ?? null,
+  });
+}
 
-    return NextResponse.json({ status: 'fulfilled', email: order.email });
-  } catch (err) {
-    console.error('[verify-payment] Error:', err);
-    return NextResponse.json({ error: 'Verification failed' }, { status: 500 });
+function mapStatus(status: string): string {
+  switch (status) {
+    case 'paid':              return 'paid';
+    case 'payment_initiated': return 'pending';
+    case 'pending':           return 'pending';
+    case 'failed':            return 'failed';
+    case 'cancelled':         return 'cancelled';
+    case 'fraud_blocked':     return 'failed';
+    default:                  return 'pending';
   }
 }

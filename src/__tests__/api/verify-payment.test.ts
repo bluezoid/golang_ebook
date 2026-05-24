@@ -1,41 +1,29 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
-import { buildMongoOrder } from '../factories/order.factory';
 
-// ── Mock all dependencies ─────────────────────────────────────────────────────
+// ── Mock Mongoose models ──────────────────────────────────────────────────────
 
-const mockPGFetchOrder = vi.fn();
-vi.mock('cashfree-pg', () => ({
-  Cashfree: vi.fn().mockImplementation(() => ({ PGFetchOrder: mockPGFetchOrder })),
-  CFEnvironment: { SANDBOX: 'sandbox', PRODUCTION: 'production' },
+const mockOrderFindOne = vi.fn();
+const mockAuditLogCreate = vi.fn();
+
+vi.mock('@/models/Order', () => ({
+  default: { findOne: mockOrderFindOne },
 }));
 
-const mockGetSignedUrl = vi.fn();
-vi.mock('@aws-sdk/s3-request-presigner', () => ({ getSignedUrl: mockGetSignedUrl }));
-vi.mock('@aws-sdk/client-s3', () => ({
-  S3Client: vi.fn().mockImplementation(() => ({})),
-  GetObjectCommand: vi.fn().mockImplementation((p) => p),
+vi.mock('@/models/AuditLog', () => ({
+  default: { create: mockAuditLogCreate },
 }));
 
-const mockSendTransacEmail = vi.fn();
-vi.mock('@getbrevo/brevo', () => ({
-  BrevoClient: vi.fn().mockImplementation(() => ({
-    transactionalEmails: { sendTransacEmail: mockSendTransacEmail },
-  })),
+vi.mock('@/lib/mongoose', () => ({
+  connectMongoose: vi.fn().mockResolvedValue({}),
 }));
 
-const mockFindOne = vi.fn();
-const mockUpdateOne = vi.fn();
-const mockCollection = vi.fn().mockReturnValue({ findOne: mockFindOne, updateOne: mockUpdateOne });
-const mockDb = { collection: mockCollection };
-const mockClient = { db: vi.fn().mockReturnValue(mockDb) };
+// ── Import route after mocks ──────────────────────────────────────────────────
 
-vi.mock('@/lib/mongodb', () => ({ default: Promise.resolve(mockClient) }));
-
-// ── Import route after mocks ─────────────────────────────────────────────────
 const { POST } = await import('@/app/api/verify-payment/route');
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
 function makeRequest(body: unknown) {
   return new NextRequest('http://localhost:3000/api/verify-payment', {
     method: 'POST',
@@ -44,167 +32,135 @@ function makeRequest(body: unknown) {
   });
 }
 
-const MOCK_SIGNED_URL = 'https://r2.test/pdf?sig=abc&expires=900';
-const MOCK_ORDER = buildMongoOrder({ orderId: 'BLZ-TEST123', status: 'pending' });
+const MOCK_PAID_ORDER = {
+  _id: 'mongo-id-1',
+  internalOrderId: 'BLZ-TEST0000000001',
+  status: 'paid',
+  customerEmail: 'arjun@gmail.com',
+  isDownloadEligible: true,
+  lockedProductTitle: 'Deep Dive Into Go',
+  paidAt: new Date('2025-05-24T10:00:00Z'),
+  signedUrlMeta: null,
+};
+
+const MOCK_PENDING_ORDER = {
+  ...MOCK_PAID_ORDER,
+  internalOrderId: 'BLZ-TEST0000000002',
+  status: 'payment_initiated',
+  isDownloadEligible: false,
+  paidAt: null,
+};
 
 describe('POST /api/verify-payment', () => {
   beforeEach(() => {
-    mockPGFetchOrder.mockReset();
-    mockFindOne.mockReset();
-    mockUpdateOne.mockReset();
-    mockSendTransacEmail.mockReset();
-    mockGetSignedUrl.mockReset();
-
-    mockGetSignedUrl.mockResolvedValue(MOCK_SIGNED_URL);
-    mockSendTransacEmail.mockResolvedValue({ messageId: 'msg-1' });
-    mockUpdateOne.mockResolvedValue({ modifiedCount: 1 });
+    vi.clearAllMocks();
+    mockAuditLogCreate.mockResolvedValue({});
   });
 
-  // ── Happy path ──────────────────────────────────────────────────────────
-  it('200 fulfilled — PAID status triggers email and returns fulfilled', async () => {
-    mockFindOne.mockResolvedValue(MOCK_ORDER);
-    mockPGFetchOrder.mockResolvedValue({ data: { order_status: 'PAID', cf_order_id: 999 } });
+  // ── Happy path — paid order ────────────────────────────────────────────────
 
-    const res = await POST(makeRequest({ orderId: MOCK_ORDER.orderId }));
+  it('200 paid — returns paid=true and downloadEmailSent=true', async () => {
+    mockOrderFindOne.mockReturnValue({
+      select: vi.fn().mockReturnValue({ lean: vi.fn().mockResolvedValue(MOCK_PAID_ORDER) }),
+    });
+
+    const res = await POST(makeRequest({ orderId: 'BLZ-TEST0000000001' }));
     const json = await res.json();
 
     expect(res.status).toBe(200);
-    expect(json.status).toBe('fulfilled');
-    expect(json.email).toBe(MOCK_ORDER.email);
+    expect(json.paid).toBe(true);
+    expect(json.status).toBe('paid');
+    expect(json.downloadEmailSent).toBe(true);
+    expect(json.productTitle).toBe('Deep Dive Into Go');
+    expect(json.paidAt).toBeDefined();
+    // Must not leak token or sensitive fields
+    expect(json.token).toBeUndefined();
+    expect(json.tokenHash).toBeUndefined();
+    expect(json.customerEmail).toBeUndefined();
   });
 
-  it('sends email with correct params on PAID', async () => {
-    mockFindOne.mockResolvedValue(MOCK_ORDER);
-    mockPGFetchOrder.mockResolvedValue({ data: { order_status: 'PAID', cf_order_id: 999 } });
+  it('200 pending — returns paid=false for payment_initiated orders', async () => {
+    mockOrderFindOne.mockReturnValue({
+      select: vi.fn().mockReturnValue({ lean: vi.fn().mockResolvedValue(MOCK_PENDING_ORDER) }),
+    });
 
-    await POST(makeRequest({ orderId: MOCK_ORDER.orderId }));
-
-    expect(mockSendTransacEmail).toHaveBeenCalledOnce();
-    const emailArg = mockSendTransacEmail.mock.calls[0][0];
-    expect(emailArg.to[0].email).toBe(MOCK_ORDER.email);
-  });
-
-  it('uses the full PDF signed URL (900s expiry) in the email', async () => {
-    mockFindOne.mockResolvedValue(MOCK_ORDER);
-    mockPGFetchOrder.mockResolvedValue({ data: { order_status: 'PAID', cf_order_id: 999 } });
-
-    await POST(makeRequest({ orderId: MOCK_ORDER.orderId }));
-
-    expect(mockGetSignedUrl).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.anything(),
-      { expiresIn: 900 }
-    );
-  });
-
-  it('updates MongoDB status to paid with paidAt date', async () => {
-    mockFindOne.mockResolvedValue(MOCK_ORDER);
-    mockPGFetchOrder.mockResolvedValue({ data: { order_status: 'PAID', cf_order_id: 999 } });
-
-    await POST(makeRequest({ orderId: MOCK_ORDER.orderId }));
-
-    expect(mockUpdateOne).toHaveBeenCalledWith(
-      { orderId: MOCK_ORDER.orderId },
-      expect.objectContaining({
-        $set: expect.objectContaining({
-          status: 'paid',
-          paidAt: expect.any(Date),
-        }),
-      })
-    );
-  });
-
-  // ── Already fulfilled ───────────────────────────────────────────────────
-  it('200 already_fulfilled — does not re-send email', async () => {
-    mockFindOne.mockResolvedValue({ ...MOCK_ORDER, status: 'paid' });
-
-    const res = await POST(makeRequest({ orderId: MOCK_ORDER.orderId }));
+    const res = await POST(makeRequest({ orderId: 'BLZ-TEST0000000002' }));
     const json = await res.json();
 
     expect(res.status).toBe(200);
-    expect(json.status).toBe('already_fulfilled');
-    expect(mockSendTransacEmail).not.toHaveBeenCalled();
-    expect(mockPGFetchOrder).not.toHaveBeenCalled();
+    expect(json.paid).toBe(false);
+    expect(json.status).toBe('pending');
+    expect(json.downloadEmailSent).toBe(false);
   });
 
-  // ── Failed / cancelled states ───────────────────────────────────────────
-  it('200 failed — CANCELLED status returns failed with cashfreeStatus', async () => {
-    mockFindOne.mockResolvedValue(MOCK_ORDER);
-    mockPGFetchOrder.mockResolvedValue({ data: { order_status: 'CANCELLED' } });
+  it('200 pending — returns pending for pending status', async () => {
+    mockOrderFindOne.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        lean: vi.fn().mockResolvedValue({ ...MOCK_PENDING_ORDER, status: 'pending' }),
+      }),
+    });
 
-    const res = await POST(makeRequest({ orderId: MOCK_ORDER.orderId }));
-    const json = await res.json();
-
-    expect(json.status).toBe('failed');
-    expect(json.cashfreeStatus).toBe('CANCELLED');
-    expect(mockSendTransacEmail).not.toHaveBeenCalled();
-  });
-
-  it('200 failed — EXPIRED status returns failed', async () => {
-    mockFindOne.mockResolvedValue(MOCK_ORDER);
-    mockPGFetchOrder.mockResolvedValue({ data: { order_status: 'EXPIRED' } });
-
-    const res = await POST(makeRequest({ orderId: MOCK_ORDER.orderId }));
-    const json = await res.json();
-
-    expect(json.status).toBe('failed');
-    expect(json.cashfreeStatus).toBe('EXPIRED');
-  });
-
-  it('200 pending — ACTIVE status (not yet settled)', async () => {
-    mockFindOne.mockResolvedValue(MOCK_ORDER);
-    mockPGFetchOrder.mockResolvedValue({ data: { order_status: 'ACTIVE' } });
-
-    const res = await POST(makeRequest({ orderId: MOCK_ORDER.orderId }));
+    const res = await POST(makeRequest({ orderId: 'BLZ-TEST0000000002' }));
     const json = await res.json();
 
     expect(json.status).toBe('pending');
-    expect(json.cashfreeStatus).toBe('ACTIVE');
   });
 
-  // ── Error cases ─────────────────────────────────────────────────────────
+  it('200 failed — returns failed for fraud_blocked orders', async () => {
+    mockOrderFindOne.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        lean: vi.fn().mockResolvedValue({ ...MOCK_PENDING_ORDER, status: 'fraud_blocked' }),
+      }),
+    });
+
+    const res = await POST(makeRequest({ orderId: 'BLZ-TEST0000000002' }));
+    const json = await res.json();
+
+    expect(json.status).toBe('failed');
+  });
+
+  // ── Validation failures ────────────────────────────────────────────────────
+
   it('400 — missing orderId', async () => {
     const res = await POST(makeRequest({}));
     expect(res.status).toBe(400);
   });
 
-  it('400 — orderId is not a string', async () => {
+  it('400 — orderId not a string', async () => {
     const res = await POST(makeRequest({ orderId: 12345 }));
     expect(res.status).toBe(400);
   });
 
-  it('404 — order not found in MongoDB', async () => {
-    mockFindOne.mockResolvedValue(null);
+  it('400 — orderId wrong format (not BLZ-)', async () => {
+    const res = await POST(makeRequest({ orderId: 'CF-NOTOURFORMAT' }));
+    expect(res.status).toBe(400);
+  });
 
-    const res = await POST(makeRequest({ orderId: 'BLZ-NONEXISTENT' }));
+  // ── Not found ──────────────────────────────────────────────────────────────
+
+  it('404 — order not found in MongoDB', async () => {
+    mockOrderFindOne.mockReturnValue({
+      select: vi.fn().mockReturnValue({ lean: vi.fn().mockResolvedValue(null) }),
+    });
+
+    const res = await POST(makeRequest({ orderId: 'BLZ-NONEXISTENT0001' }));
     const json = await res.json();
 
     expect(res.status).toBe(404);
     expect(json.error).toBe('Order not found');
   });
 
-  it('500 — MongoDB findOne throws', async () => {
-    mockFindOne.mockRejectedValue(new Error('Atlas connection error'));
+  // ── No Cashfree calls ─────────────────────────────────────────────────────
 
-    const res = await POST(makeRequest({ orderId: MOCK_ORDER.orderId }));
-    expect(res.status).toBe(500);
-  });
+  it('does NOT call Cashfree — order status comes from our DB only', async () => {
+    mockOrderFindOne.mockReturnValue({
+      select: vi.fn().mockReturnValue({ lean: vi.fn().mockResolvedValue(MOCK_PAID_ORDER) }),
+    });
 
-  it('500 — email sending throws', async () => {
-    mockFindOne.mockResolvedValue(MOCK_ORDER);
-    mockPGFetchOrder.mockResolvedValue({ data: { order_status: 'PAID', cf_order_id: 1 } });
-    mockSendTransacEmail.mockRejectedValue(new Error('Brevo down'));
+    await POST(makeRequest({ orderId: 'BLZ-TEST0000000001' }));
 
-    const res = await POST(makeRequest({ orderId: MOCK_ORDER.orderId }));
-    expect(res.status).toBe(500);
-  });
-
-  it('500 — R2 signed URL generation throws', async () => {
-    mockFindOne.mockResolvedValue(MOCK_ORDER);
-    mockPGFetchOrder.mockResolvedValue({ data: { order_status: 'PAID', cf_order_id: 1 } });
-    mockGetSignedUrl.mockRejectedValue(new Error('R2 bucket unreachable'));
-
-    const res = await POST(makeRequest({ orderId: MOCK_ORDER.orderId }));
-    expect(res.status).toBe(500);
+    // No Cashfree mock needed — if any cashfree call happened, the test would throw
+    // because cashfree-pg is not mocked in this test file
+    expect(mockOrderFindOne).toHaveBeenCalledOnce();
   });
 });

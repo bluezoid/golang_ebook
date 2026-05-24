@@ -4,12 +4,14 @@ import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import { useInView } from 'framer-motion';
 import { Download, ArrowRight } from 'lucide-react';
+import type { ProductData } from './DeepDiveIntoGoPage';
 
 interface CTASectionProps {
   onBuyClick: () => void;
+  product: ProductData;
 }
 
-export default function CTASection({ onBuyClick }: CTASectionProps) {
+export default function CTASection({ onBuyClick, product }: CTASectionProps) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-60px' });
 
@@ -48,7 +50,7 @@ export default function CTASection({ onBuyClick }: CTASectionProps) {
               className="group flex items-center gap-2.5 px-8 py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-base transition-all duration-200 shadow-xl shadow-blue-600/30 hover:shadow-blue-500/35 hover:scale-[1.02] active:scale-[0.98]"
             >
               <Download className="w-5 h-5" />
-              Get the Ebook — ₹149
+              Get the Ebook — ₹{product.currentPrice}
               <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-0.5" />
             </button>
             <p className="text-sm text-zinc-600">One-time · Instant delivery · Lifetime access</p>

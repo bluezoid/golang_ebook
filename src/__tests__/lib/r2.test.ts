@@ -11,50 +11,9 @@ vi.mock('@aws-sdk/client-s3', () => ({
   GetObjectCommand: vi.fn().mockImplementation((params) => ({ ...params, _type: 'GetObjectCommand' })),
 }));
 
-const { getSignedDownloadUrl, getSamplePdfSignedUrl, getFullPdfSignedUrl } = await import('@/lib/r2');
+const { getSamplePdfSignedUrl, getFullPdfSignedUrl, getFullPdfR2Key } = await import('@/lib/r2');
 
-const MOCK_SIGNED_URL = 'https://test.r2.cloudflarestorage.com/bucket/key?X-Amz-Expires=3600&X-Amz-Signature=abc';
-
-describe('getSignedDownloadUrl', () => {
-  beforeEach(() => {
-    mockGetSignedUrl.mockReset();
-  });
-
-  it('calls getSignedUrl and returns the resulting URL', async () => {
-    mockGetSignedUrl.mockResolvedValue(MOCK_SIGNED_URL);
-
-    const result = await getSignedDownloadUrl('some/path/file.pdf', 3600);
-    expect(result).toBe(MOCK_SIGNED_URL);
-    expect(mockGetSignedUrl).toHaveBeenCalledOnce();
-  });
-
-  it('passes correct Bucket and Key to GetObjectCommand', async () => {
-    const { GetObjectCommand } = await import('@aws-sdk/client-s3');
-    mockGetSignedUrl.mockResolvedValue(MOCK_SIGNED_URL);
-
-    await getSignedDownloadUrl('ebooks/test.pdf', 900);
-
-    expect(GetObjectCommand).toHaveBeenCalledWith({
-      Bucket: process.env.R2_BUCKET_NAME,
-      Key: 'ebooks/test.pdf',
-    });
-  });
-
-  it('passes expiresIn to getSignedUrl options', async () => {
-    mockGetSignedUrl.mockResolvedValue(MOCK_SIGNED_URL);
-
-    await getSignedDownloadUrl('key', 1800);
-
-    const callArgs = mockGetSignedUrl.mock.calls[0];
-    expect(callArgs[2]).toEqual({ expiresIn: 1800 });
-  });
-
-  it('propagates error from getSignedUrl', async () => {
-    mockGetSignedUrl.mockRejectedValue(new Error('R2 connection failed'));
-
-    await expect(getSignedDownloadUrl('key', 3600)).rejects.toThrow('R2 connection failed');
-  });
-});
+const MOCK_SIGNED_URL = 'https://test.r2.cloudflarestorage.com/bucket/key?X-Amz-Expires=600&X-Amz-Signature=abc';
 
 describe('getSamplePdfSignedUrl', () => {
   beforeEach(() => mockGetSignedUrl.mockReset());
@@ -81,6 +40,7 @@ describe('getSamplePdfSignedUrl', () => {
       { expiresIn: 3600 }
     );
   });
+
 });
 
 describe('getFullPdfSignedUrl', () => {
@@ -97,7 +57,7 @@ describe('getFullPdfSignedUrl', () => {
     );
   });
 
-  it('uses 900 second expiry (15 minutes) for security', async () => {
+  it('uses 600 second expiry (10 minutes)', async () => {
     mockGetSignedUrl.mockResolvedValue(MOCK_SIGNED_URL);
 
     await getFullPdfSignedUrl();
@@ -105,7 +65,23 @@ describe('getFullPdfSignedUrl', () => {
     expect(mockGetSignedUrl).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
-      { expiresIn: 900 }
+      { expiresIn: 600 }
     );
+  });
+
+});
+
+describe('getFullPdfR2Key', () => {
+  it('returns the R2_FULL_PDF_KEY env value', () => {
+    process.env.R2_FULL_PDF_KEY = 'ebooks/test.pdf';
+    const key = getFullPdfR2Key();
+    expect(key).toBe('ebooks/test.pdf');
+  });
+
+  it('throws if R2_FULL_PDF_KEY is not set', () => {
+    const original = process.env.R2_FULL_PDF_KEY;
+    delete process.env.R2_FULL_PDF_KEY;
+    expect(() => getFullPdfR2Key()).toThrow('R2_FULL_PDF_KEY');
+    process.env.R2_FULL_PDF_KEY = original;
   });
 });

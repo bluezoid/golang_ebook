@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import { useInView } from 'framer-motion';
 import { Download, Shield, RefreshCcw, Mail, FileText, Clock, Infinity } from 'lucide-react';
+import type { ProductData } from './DeepDiveIntoGoPage';
 
 const features = [
   { icon: FileText, label: 'Instant PDF delivery to your email' },
@@ -16,9 +17,10 @@ const features = [
 
 interface PricingCardProps {
   onBuyClick: () => void;
+  product: ProductData;
 }
 
-export default function PricingCard({ onBuyClick }: PricingCardProps) {
+export default function PricingCard({ onBuyClick, product }: PricingCardProps) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-60px' });
 
@@ -62,20 +64,24 @@ export default function PricingCard({ onBuyClick }: PricingCardProps) {
               {/* Badge + label */}
               <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-1">
-                  <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Deep Dive Into Go</span>
+                  <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">{product.title}</span>
                   <span className="text-sm font-semibold text-white">Complete Ebook</span>
                 </div>
-                <span className="text-xs font-semibold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-3 py-1 rounded-full">
-                  Launch Price
-                </span>
+                {product.discountLabel && (
+                  <span className="text-xs font-semibold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-3 py-1 rounded-full">
+                    {product.discountLabel}
+                  </span>
+                )}
               </div>
 
               {/* Price */}
               <div className="flex items-baseline gap-3">
-                <span className="text-6xl font-bold text-white tracking-tight">₹149</span>
+                <span className="text-6xl font-bold text-white tracking-tight">₹{product.currentPrice}</span>
                 <div className="flex flex-col">
-                  <span className="text-zinc-500 text-lg line-through">₹999</span>
-                  <span className="text-emerald-400 text-xs font-semibold">85% OFF</span>
+                  <span className="text-zinc-500 text-lg line-through">₹{product.originalPrice}</span>
+                  {product.discountPercent > 0 && (
+                    <span className="text-emerald-400 text-xs font-semibold">{product.discountPercent}% OFF</span>
+                  )}
                 </div>
               </div>
 
@@ -100,7 +106,7 @@ export default function PricingCard({ onBuyClick }: PricingCardProps) {
                 className="group w-full flex items-center justify-center gap-2.5 py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-base transition-all duration-200 shadow-xl shadow-blue-600/25 hover:shadow-blue-500/30 hover:scale-[1.01] active:scale-[0.99]"
               >
                 <Download className="w-5 h-5" />
-                Buy Now — ₹149
+                {product.ctaPrimary} — ₹{product.currentPrice}
               </button>
 
               {/* Trust */}

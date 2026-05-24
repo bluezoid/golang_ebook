@@ -6,14 +6,14 @@ import { motion } from 'framer-motion';
 import { CheckCircle2, Mail, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
-type VerifyState = 'verifying' | 'fulfilled' | 'already_fulfilled' | 'pending' | 'error';
+type VerifyState = 'verifying' | 'paid' | 'pending' | 'failed' | 'error';
 
 function SuccessContent() {
   const params = useSearchParams();
   const router = useRouter();
   const orderId = params.get('order_id');
   const [state, setState] = useState<VerifyState>('verifying');
-  const [email, setEmail] = useState('');
+  const [productTitle, setProductTitle] = useState('');
   const verified = useRef(false);
 
   useEffect(() => {
@@ -27,13 +27,11 @@ function SuccessContent() {
     })
       .then((r) => r.json())
       .then((data) => {
-        if (data.status === 'fulfilled') {
-          setEmail(data.email ?? '');
-          setState('fulfilled');
-        } else if (data.status === 'already_fulfilled') {
-          setState('already_fulfilled');
-        } else if (data.status === 'failed') {
-          router.replace(`/products/deep-dive-into-go/cancelled?order_id=${orderId}`);
+        if (data.paid) {
+          setProductTitle(data.productTitle ?? '');
+          setState('paid');
+        } else if (data.status === 'failed' || data.status === 'cancelled') {
+          router.replace(`/products/deep-dive-into-go?payment=failed&order_id=${orderId}`);
         } else {
           setState('pending');
         }
@@ -55,7 +53,7 @@ function SuccessContent() {
         </div>
       )}
 
-      {(state === 'fulfilled' || state === 'already_fulfilled') && (
+      {state === 'paid' && (
         <div className="w-full max-w-md rounded-3xl border border-white/8 bg-zinc-900/80 overflow-hidden">
           <div className="h-px bg-linear-to-r from-transparent via-emerald-500/60 to-transparent" />
           <div className="p-8 flex flex-col gap-6 items-center text-center">
@@ -65,9 +63,7 @@ function SuccessContent() {
             <div className="flex flex-col gap-2">
               <h1 className="text-2xl font-bold text-white">Payment Successful!</h1>
               <p className="text-zinc-400 text-sm leading-relaxed">
-                {state === 'already_fulfilled'
-                  ? 'Your purchase was already processed. Check your email for the download link.'
-                  : `Your eBook is on its way. Check ${email || 'your email'} for the download link — it arrives within a minute.`}
+                Your eBook is on its way. Check your email for the download link — it arrives within a minute.
               </p>
             </div>
 
@@ -77,13 +73,13 @@ function SuccessContent() {
                   <span className="text-white font-bold">Go</span>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">Deep Dive Into Go</p>
+                  <p className="text-sm font-semibold text-white">{productTitle || 'Deep Dive Into Go'}</p>
                   <p className="text-xs text-zinc-500">102 chapters · 315 programs · First Edition 2025</p>
                 </div>
               </div>
               <div className="flex items-start gap-2 text-xs text-zinc-500 mt-1">
                 <Mail className="w-3.5 h-3.5 mt-0.5 shrink-0 text-blue-400" />
-                <span>Download link sent to your email. Valid for 15 minutes — click promptly.</span>
+                <span>Download link sent to your email. Valid for 10 minutes — click promptly.</span>
               </div>
             </div>
 
