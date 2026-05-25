@@ -32,11 +32,16 @@ function getR2Client(): S3Client {
 
 // ─── Internal URL generation ───────────────────────────────────────────────────
 
-async function createSignedUrl(key: string, expiresInSeconds: number): Promise<string> {
+async function createSignedUrl(
+  key: string,
+  expiresInSeconds: number,
+  filename?: string,
+): Promise<string> {
   const client = getR2Client();
   const command = new GetObjectCommand({
     Bucket: process.env.R2_BUCKET_NAME!,
     Key: key,
+    ...(filename && { ResponseContentDisposition: `attachment; filename="${filename}"` }),
   });
   return getSignedUrl(client, command, { expiresIn: expiresInSeconds });
 }
@@ -57,7 +62,7 @@ async function createSignedUrl(key: string, expiresInSeconds: number): Promise<s
 export async function getFullPdfSignedUrl(): Promise<string> {
   const key = process.env.R2_FULL_PDF_KEY;
   if (!key) throw new Error('R2_FULL_PDF_KEY is not configured');
-  return createSignedUrl(key, 600); // 10 minutes
+  return createSignedUrl(key, 600, 'deep_dive_into_go.pdf'); // 10 minutes, force download
 }
 
 /**
