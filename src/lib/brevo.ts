@@ -41,7 +41,7 @@ export async function sendEbookDeliveryEmail({
           <tr>
             <td style="padding:40px 40px 32px;">
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:28px;">
-                <img src="https://bluezoid.in/email-logo.png" alt="Bluezoid" width="32" height="32" style="width:32px;height:32px;border-radius:50%;display:block;" />
+                <img src="https://deepdiveintogo.in/email-logo.png" alt="Bluezoid" width="32" height="32" style="width:32px;height:32px;border-radius:50%;display:block;" />
                 <span style="color:#ffffff;font-size:15px;font-weight:700;letter-spacing:-0.01em;">Bluezoid</span>
               </div>
               <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:100px;padding:6px 14px;margin-bottom:28px;">
@@ -82,7 +82,7 @@ export async function sendEbookDeliveryEmail({
           <tr>
             <td style="padding:20px 40px 32px;border-top:1px solid rgba(255,255,255,0.06);">
               <p style="margin:0;font-size:12px;color:#3f3f46;text-align:center;">
-                © 2025 Bluezoid · <a href="https://bluezoid.in" style="color:#52525b;text-decoration:none;">bluezoid.in</a>
+                © 2025 Bluezoid · <a href="https://deepdiveintogo.in" style="color:#52525b;text-decoration:none;">deepdiveintogo.in</a>
               </p>
             </td>
           </tr>

@@ -20,7 +20,7 @@ export default function TermsPage() {
         {
           heading: '2. Products and Delivery',
           body: [
-            'All products sold on bluezoid.in are digital goods (eBooks in PDF format).',
+            'All products sold on deepdiveintogo.in are digital goods (eBooks in PDF format).',
             'Upon successful payment, a one-time download link valid for 10 minutes is sent to the email address provided at checkout.',
             'It is your responsibility to provide a valid, accessible email address.',
             'If the link expires before use, contact support@bluezoid.in with your order ID for assistance.',

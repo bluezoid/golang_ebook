@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/api/', '/products/deep-dive-into-go/success', '/products/deep-dive-into-go/cancelled'],
       },
     ],
-    sitemap: 'https://bluezoid.in/sitemap.xml',
+    sitemap: 'https://deepdiveintogo.in/sitemap.xml',
   };
 }

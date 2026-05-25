@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Script from 'next/script';
 import DeepDiveIntoGoPage from '@/components/deep-dive-into-go/DeepDiveIntoGoPage';
 
-const BASE_URL = 'https://bluezoid.in';
+const BASE_URL = 'https://deepdiveintogo.in';
 const PAGE_URL = `${BASE_URL}/products/deep-dive-into-go`;
 const TITLE = 'Deep Dive Into Go — Production-Ready Systems | Bluezoid';
 const DESCRIPTION =

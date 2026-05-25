@@ -64,7 +64,7 @@ All 315 programs are runnable with Go 1.22+. Includes 300+ interview Q&A and a c
       'Master Go with 102 chapters, 315 runnable programs, 10 capstone projects, and 300+ interview Q&A. One-time purchase, lifetime access.',
     keywords: ['golang ebook', 'go programming', 'learn go', 'go concurrency', 'go microservices'],
     ogImageUrl: '',
-    canonicalUrl: 'https://bluezoid.in/products/deep-dive-into-go',
+    canonicalUrl: 'https://deepdiveintogo.in/products/deep-dive-into-go',
   },
   samplePdfUrl: '',              // Served via /api/sample-download → R2
   fullPdfR2Key: R2_FULL_PDF_KEY, // Set from env — never hardcoded

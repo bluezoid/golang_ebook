@@ -15,7 +15,7 @@ export default function RefundPage() {
       sections={[
         {
           heading: '1. Digital Product Policy',
-          body: 'All products sold on bluezoid.in are digital goods delivered instantly via email. Due to the nature of digital products, we generally do not offer refunds once the download link has been accessed.',
+          body: 'All products sold on deepdiveintogo.in are digital goods delivered instantly via email. Due to the nature of digital products, we generally do not offer refunds once the download link has been accessed.',
         },
         {
           heading: '2. Eligible Refund Scenarios',

@@ -302,7 +302,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // ── 12. Generate signed R2 URL and send email ─────────────────────────────────
   let emailSent = false;
   try {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://bluezoid.in';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://deepdiveintogo.in';
     // The download link goes through our /api/download/[token] endpoint —
     // NOT directly to R2. This lets us enforce one-time use and access logging.
     const downloadLink = `${appUrl}/api/download/${token}`;

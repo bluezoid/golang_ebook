@@ -161,7 +161,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // ── 5. Create internal order with LOCKED amount ───────────────────────────────
   const internalOrderId = `BLZ-${randomUUID().replace(/-/g, '').slice(0, 16).toUpperCase()}`;
   const fullName = `${body.firstName} ${body.lastName}`;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://bluezoid.in';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://deepdiveintogo.in';
 
   let order!: IOrder;
   try {
