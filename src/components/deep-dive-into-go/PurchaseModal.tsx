@@ -198,7 +198,7 @@ export default function PurchaseModal({ open, onClose, product }: PurchaseModalP
                         id="modal-first-name"
                         type="text"
                         autoComplete="given-name"
-                        placeholder="Arjun"
+                        placeholder="First Name"
                         aria-invalid={!!errors.firstName}
                         {...firstNameRegister}
                         ref={(el) => {
@@ -220,7 +220,7 @@ export default function PurchaseModal({ open, onClose, product }: PurchaseModalP
                         id="modal-last-name"
                         type="text"
                         autoComplete="family-name"
-                        placeholder="Mehta"
+                        placeholder="Last Name"
                         aria-invalid={!!errors.lastName}
                         {...register('lastName')}
                         className={inputClass(!!errors.lastName)}
