@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 
 export default function Footer() {
   return (
@@ -10,13 +9,13 @@ export default function Footer() {
           {/* Brand */}
           <div className="flex flex-col items-center sm:items-start gap-2">
             <div className="flex items-center gap-2">
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src="/logo.png"
                 alt="Bluezoid"
                 width={28}
                 height={28}
                 className="w-7 h-7 rounded-full"
-                unoptimized
               />
               <span className="text-sm font-semibold text-white">Bluezoid</span>
             </div>
