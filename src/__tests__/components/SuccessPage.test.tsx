@@ -64,24 +64,24 @@ describe('SuccessPage', () => {
     expect(screen.getByText('Deep Dive Into Go')).toBeInTheDocument();
   });
 
-  it('redirects to product page when status is failed', async () => {
+  it('redirects to cancelled page when status is failed', async () => {
     mockVerify({ paid: false, status: 'failed' });
     renderPage();
 
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith(
-        expect.stringContaining('/products/deep-dive-into-go')
+        expect.stringContaining('/cancelled')
       );
     });
   });
 
-  it('redirects to product page when status is cancelled', async () => {
+  it('redirects to cancelled page when status is cancelled', async () => {
     mockVerify({ paid: false, status: 'cancelled' });
     renderPage();
 
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith(
-        expect.stringContaining('/products/deep-dive-into-go')
+        expect.stringContaining('/cancelled')
       );
     });
   });

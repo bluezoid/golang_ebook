@@ -3,8 +3,26 @@
 import { motion } from 'framer-motion';
 import { XCircle, ArrowLeft, Download } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+
+interface PriceInfo {
+  currentPrice: number;
+  originalPrice: number;
+}
 
 export default function CancelledPage() {
+  const [price, setPrice] = useState<PriceInfo | null>(null);
+
+  useEffect(() => {
+    fetch('/api/products/deep-dive-into-go')
+      .then((r) => r.json())
+      .then((d) => {
+        const p = d.product ?? d;
+        setPrice({ currentPrice: p.currentPrice, originalPrice: p.originalPrice });
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <main className="min-h-screen bg-zinc-950 flex items-center justify-center px-6 py-20">
       <div className="absolute inset-0 pointer-events-none">
@@ -33,7 +51,11 @@ export default function CancelledPage() {
 
             <div className="w-full rounded-2xl bg-zinc-950/60 border border-white/6 p-5 flex flex-col gap-2 text-left">
               <p className="text-sm font-semibold text-white">Deep Dive Into Go</p>
-              <p className="text-xs text-zinc-500">Still available at launch price — ₹149 (was ₹999)</p>
+              <p className="text-xs text-zinc-500">
+                {price
+                  ? `Still available at launch price — ₹${price.currentPrice} (was ₹${price.originalPrice})`
+                  : 'Still available at launch price'}
+              </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 w-full">

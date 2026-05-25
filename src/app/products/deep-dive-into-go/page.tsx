@@ -47,6 +47,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: PAGE_URL,
   },
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
   robots: {
     index: true,
     follow: true,

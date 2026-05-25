@@ -19,8 +19,14 @@ function SuccessContent() {
   useEffect(() => {
     if (!orderId) return;
 
-    const MAX_ATTEMPTS = 20;   // 20 × 3s = 60s max
-    const INTERVAL_MS  = 3000;
+    // First 3 polls are fast (1s apart) to catch immediate success.
+    // If still pending after 3 attempts, the user likely cancelled — redirect.
+    // If paid within those 3, show success. Genuine slow payments (network lag)
+    // get 3 more slow polls (3s apart) before we give up and redirect to cancelled.
+    const FAST_ATTEMPTS  = 3;
+    const FAST_INTERVAL  = 1000;
+    const SLOW_ATTEMPTS  = 3;
+    const SLOW_INTERVAL  = 3000;
     let attempt = 0;
 
     async function poll() {
@@ -46,17 +52,20 @@ function SuccessContent() {
 
         if (data.status === 'failed' || data.status === 'cancelled') {
           stopped.current = true;
-          router.replace(`/products/deep-dive-into-go?payment=failed&order_id=${orderId}`);
+          router.replace(`/products/deep-dive-into-go/cancelled?order_id=${orderId}`);
           return;
         }
 
-        // Still pending — keep polling until max attempts
-        if (attempt < MAX_ATTEMPTS) {
+        // Still pending
+        const maxAttempts = FAST_ATTEMPTS + SLOW_ATTEMPTS;
+        if (attempt < maxAttempts) {
           setState('pending');
-          setTimeout(poll, INTERVAL_MS);
+          const delay = attempt < FAST_ATTEMPTS ? FAST_INTERVAL : SLOW_INTERVAL;
+          setTimeout(poll, delay);
         } else {
+          // All attempts exhausted — order never became paid, treat as cancelled
           stopped.current = true;
-          setState('pending'); // leave on pending so user sees support info
+          router.replace(`/products/deep-dive-into-go/cancelled?order_id=${orderId}`);
         }
       } catch {
         if (!stopped.current) setState('error');

@@ -31,9 +31,9 @@ describe('CancelledPage', () => {
     expect(emailLink).toHaveAttribute('href', 'mailto:support@bluezoid.in');
   });
 
-  it('shows the product name and launch price', () => {
+  it('shows the product name and launch price text', () => {
     render(<CancelledPage />);
     expect(screen.getByText(/deep dive into go/i)).toBeInTheDocument();
-    expect(screen.getByText(/₹149/)).toBeInTheDocument();
+    expect(screen.getByText(/still available at launch price/i)).toBeInTheDocument();
   });
 });

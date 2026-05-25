@@ -40,6 +40,10 @@ export async function sendEbookDeliveryEmail({
           </tr>
           <tr>
             <td style="padding:40px 40px 32px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:28px;">
+                <img src="https://bluezoid.in/email-logo.png" alt="Bluezoid" width="32" height="32" style="width:32px;height:32px;border-radius:50%;display:block;" />
+                <span style="color:#ffffff;font-size:15px;font-weight:700;letter-spacing:-0.01em;">Bluezoid</span>
+              </div>
               <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:100px;padding:6px 14px;margin-bottom:28px;">
                 <span style="width:6px;height:6px;background:#60a5fa;border-radius:50%;display:inline-block;"></span>
                 <span style="color:#60a5fa;font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;">Order Confirmed</span>

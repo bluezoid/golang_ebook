@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Footer() {
   return (
@@ -9,9 +10,14 @@ export default function Footer() {
           {/* Brand */}
           <div className="flex flex-col items-center sm:items-start gap-2">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                <span className="text-white text-[10px] font-bold">B</span>
-              </div>
+              <Image
+                src="/logo.png"
+                alt="Bluezoid"
+                width={28}
+                height={28}
+                className="w-7 h-7 rounded-full"
+                unoptimized
+              />
               <span className="text-sm font-semibold text-white">Bluezoid</span>
             </div>
             <p className="text-xs text-zinc-600 max-w-xs text-center sm:text-left">

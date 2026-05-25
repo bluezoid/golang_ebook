@@ -23,18 +23,18 @@ test.describe('Success Page', () => {
     await expect(page.getByText(/payment successful/i)).toBeVisible();
   });
 
-  test('redirects to product page on failed status', async ({ page }) => {
+  test('redirects to cancelled page on failed status', async ({ page }) => {
     await mockVerifyPayment(page, { paid: false, status: 'failed' });
     await page.goto('/products/deep-dive-into-go/success?order_id=BLZ-FAILED01');
-    await page.waitForURL(/\/products\/deep-dive-into-go/, { timeout: 5000 });
-    expect(page.url()).toContain('/products/deep-dive-into-go');
+    await page.waitForURL(/\/cancelled/, { timeout: 5000 });
+    expect(page.url()).toContain('/cancelled');
   });
 
-  test('redirects to product page on cancelled status', async ({ page }) => {
+  test('redirects to cancelled page on cancelled status', async ({ page }) => {
     await mockVerifyPayment(page, { paid: false, status: 'cancelled' });
     await page.goto('/products/deep-dive-into-go/success?order_id=BLZ-CANCEL01');
-    await page.waitForURL(/\/products\/deep-dive-into-go/, { timeout: 5000 });
-    expect(page.url()).toContain('/products/deep-dive-into-go');
+    await page.waitForURL(/\/cancelled/, { timeout: 5000 });
+    expect(page.url()).toContain('/cancelled');
   });
 
   test('shows pending card on pending status', async ({ page }) => {
