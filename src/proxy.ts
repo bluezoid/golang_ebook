@@ -19,6 +19,9 @@ const ALLOWED_PREFIXES = [
   '/sitemap.xml',
   '/robots.txt',
   '/og/',
+  '/privacy',
+  '/terms',
+  '/refund',
 ];
 
 // ─── Bot UA patterns ───────────────────────────────────────────────────────────

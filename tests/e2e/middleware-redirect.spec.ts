@@ -34,6 +34,24 @@ test.describe('Middleware redirects', () => {
     await expect(page.getByText(/payment cancelled/i)).toBeVisible();
   });
 
+  test('/privacy is NOT redirected', async ({ page }) => {
+    const response = await page.goto('/privacy');
+    expect(response?.status()).toBe(200);
+    await expect(page).toHaveURL('/privacy');
+  });
+
+  test('/terms is NOT redirected', async ({ page }) => {
+    const response = await page.goto('/terms');
+    expect(response?.status()).toBe(200);
+    await expect(page).toHaveURL('/terms');
+  });
+
+  test('/refund is NOT redirected', async ({ page }) => {
+    const response = await page.goto('/refund');
+    expect(response?.status()).toBe(200);
+    await expect(page).toHaveURL('/refund');
+  });
+
   test('/sitemap.xml is accessible', async ({ page }) => {
     const response = await page.goto('/sitemap.xml');
     expect(response?.status()).toBe(200);
